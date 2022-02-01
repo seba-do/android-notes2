@@ -16,6 +16,10 @@ To solve this problem we want to create an app to take notes.
 * Persist notes
 * Load persisted notes at the start of the app
 
+### Bonus
+
+* Modify existing notes
+
 ## Hints
 
 * Start with an activity, which has a fragment-holder to show the different fragments
