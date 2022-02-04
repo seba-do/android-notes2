@@ -17,13 +17,19 @@ class NotesRepository private constructor(context: Context) {
 
     private val persistenceRepository = PersistenceRepository(context, NOTES_DB)
 
-    fun addNewNote(note: Note) {
+    fun saveNote(note: Note) {
         persistenceRepository.writeString(note.uid, note.toString())
+    }
+
+    fun updatePositions(list: List<Note>) {
+        list.forEachIndexed { index, note ->
+            saveNote(note.copy(pos = index))
+        }
     }
 
     fun getNotes(): List<Note> = persistenceRepository.getAllValues().map {
         Note.fromString(it)
-    }
+    }.sortedBy { it.pos }
 
     fun removeNote(note: Note) {
         persistenceRepository.removeEntry(note.uid)

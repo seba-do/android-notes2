@@ -19,4 +19,11 @@ class PersistenceRepository(context: Context, dbName: String) {
         remove(key)
         commit()
     }
+
+    fun writeInt(key: String, value: Int) = with(sharedPrefs.edit()) {
+        putInt(key, value)
+        commit()
+    }
+
+    fun readInt(key: String) = sharedPrefs.getInt(key, 0)
 }

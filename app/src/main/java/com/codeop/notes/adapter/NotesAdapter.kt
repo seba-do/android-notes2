@@ -3,14 +3,15 @@ package com.codeop.notes.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.VhNoteBinding
 
 class NotesAdapter(
-    var items: List<Note>,
+    private val onItemClick: (Note) -> Unit,
     private val onDeleteClick: (Note) -> Unit
-) : RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
+) : ListAdapter<Note, NotesAdapter.NotesViewHolder>(NotesDiffUtil()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotesViewHolder {
         val binding = VhNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -18,17 +19,23 @@ class NotesAdapter(
     }
 
     override fun onBindViewHolder(holder: NotesViewHolder, position: Int) {
-        holder.bind(items[position], onDeleteClick)
+        holder.bind(getItem(position), onItemClick, onDeleteClick)
     }
-
-    override fun getItemCount() = items.size
 
     class NotesViewHolder(
         private val binding: VhNoteBinding,
     ) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(note: Note, onDeleteClick: (Note) -> Unit) {
+        fun bind(
+            note: Note,
+            onItemClick: (Note) -> Unit,
+            onDeleteClick: (Note) -> Unit
+        ) {
+            itemView.setOnClickListener {
+                onItemClick(note)
+            }
+
             with(binding) {
                 root.setCardBackgroundColor(
                     ContextCompat.getColor(root.context, note.color.colorId)
@@ -40,6 +47,16 @@ class NotesAdapter(
                     onDeleteClick(note)
                 }
             }
+        }
+    }
+
+    class NotesDiffUtil : androidx.recyclerview.widget.DiffUtil.ItemCallback<Note>() {
+        override fun areItemsTheSame(oldItem: Note, newItem: Note): Boolean {
+            return oldItem.uid == newItem.uid
+        }
+
+        override fun areContentsTheSame(oldItem: Note, newItem: Note): Boolean {
+            return oldItem == newItem
         }
     }
 }

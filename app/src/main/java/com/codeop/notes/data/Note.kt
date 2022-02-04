@@ -7,7 +7,8 @@ data class Note(
     val uid: String,
     val title: String,
     val text: String,
-    val color: Color
+    val color: Color,
+    val pos: Int = -1
 ) {
     companion object {
         private const val DELIMITER = "|"
@@ -17,12 +18,20 @@ data class Note(
 
         fun fromString(value: String): Note {
             val split = value.split(DELIMITER)
-            return Note(split[0], split[1], split[2], Color.values()[split[3].toInt()])
+            return Note(
+                uid = split[0],
+                title = split[1],
+                text = split[2],
+                color = Color.values()[split[3].toInt()],
+                pos = split[4].toInt()
+            )
         }
     }
 
     override fun toString(): String {
-        return "$uid$DELIMITER$title$DELIMITER$text$DELIMITER${Color.values().indexOf(color)}"
+        return "$uid$DELIMITER$title$DELIMITER$text$DELIMITER${
+            Color.values().indexOf(color)
+        }$DELIMITER$pos"
     }
 
     enum class Color(val colorId: Int) {
