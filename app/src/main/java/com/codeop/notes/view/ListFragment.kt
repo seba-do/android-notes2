@@ -1,24 +1,27 @@
 package com.codeop.notes.view
 
 import android.os.Bundle
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.codeop.notes.R
 import com.codeop.notes.adapter.NotesAdapter
 import com.codeop.notes.data.LayoutType
-import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.FragmentListBinding
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
+import com.codeop.notes.utils.ListItemTouchHelper
 
 class ListFragment(
-    private val onAddClick: () -> Unit,
-    private val onItemClick: (Note) -> Unit,
+//    private val onAddClick: () -> Unit,
+//    private val onItemClick: (Note) -> Unit,
 ) : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
     private lateinit var menu: Menu
@@ -32,37 +35,70 @@ class ListFragment(
     private val appConfigRepository: AppConfigRepository
         get() = AppConfigRepository.getInstance(requireContext())
 
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity?.setTitle(R.string.app_name)
-        setHasOptionsMenu(true)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        activity?.setTitle(R.string.app_name)
+        setHasOptionsMenu(true)
 
         binding = FragmentListBinding.bind(view)
 
         binding.notesList.apply {
             setLayoutManager(appConfigRepository.getSelectedLayoutType())
 
-            adapter = NotesAdapter(onItemClick) {
-                notesRepository.removeNote(it)
-                notesAdapter.submitList(notesRepository.getNotes())
-            }
+            adapter = NotesAdapter(
+                onDeleteClick = {
+                    notesRepository.removeNote(it)
 
-            notesAdapter.submitList(notesRepository.getNotes())
-            itemTouchHelper.attachToRecyclerView(this)
+                    notesAdapter.submitList(notesRepository.getActiveNotes())
+                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
+                },
+                onArchiveClick = {
+                    notesRepository.saveNote(it.copy(archived = true))
+
+                    notesAdapter.submitList(notesRepository.getActiveNotes())
+                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
+                },
+                onEditClick = {
+                    findNavController().navigate(
+                        R.id.action_listFragment_to_addFragment,
+                        Bundle().apply {
+                            putParcelable("note", it)
+                        })
+                }
+            )
+
+            notesAdapter.submitList(notesRepository.getActiveNotes())
+            setAnimationVisibility(notesAdapter.currentList.isEmpty())
+
+            ItemTouchHelper(
+                ListItemTouchHelper(
+                    notesRepository,
+                    notesAdapter,
+                    this
+                )
+            ).attachToRecyclerView(this)
         }
 
         binding.btnAdd.setOnClickListener {
-            onAddClick()
+            findNavController().navigate(R.id.action_listFragment_to_addFragment)
+        }
+    }
+
+    private fun setAnimationVisibility(isListEmpty: Boolean) {
+        binding.emptyListAnimation.apply {
+            if (isListEmpty) {
+                isVisible = true
+                playAnimation()
+            } else {
+                isVisible = false
+                cancelAnimation()
+            }
         }
     }
 
     private fun setLayoutManager(layoutType: LayoutType) {
-        binding.notesList.layoutManager = when(layoutType) {
+        binding.notesList.layoutManager = when (layoutType) {
             LayoutType.GRID -> StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
             else -> LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         }
@@ -98,54 +134,5 @@ class ListFragment(
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    private val  itemTouchHelper: ItemTouchHelper by lazy {
-        val simpleItemTouchCallback = object: ItemTouchHelper.SimpleCallback(UP or DOWN or START or END, 0) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                val from = viewHolder.adapterPosition
-                val to = target.adapterPosition
-
-                val list = notesAdapter.currentList.toMutableList()
-                val fromLocation = list[from]
-                list.removeAt(from)
-                if (to < from) {
-                    list.add(to + 1, fromLocation)
-                } else {
-                    list.add(to - 1, fromLocation)
-                }
-
-                notesRepository.updatePositions(list)
-
-                notesAdapter.submitList(list)
-
-                return true
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-
-            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-                super.onSelectedChanged(viewHolder, actionState)
-
-                if (actionState == ACTION_STATE_DRAG) {
-                    viewHolder?.itemView?.alpha = 0.5f
-                }
-            }
-
-            override fun clearView(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder
-            ) {
-                super.clearView(recyclerView, viewHolder)
-
-                viewHolder.itemView.alpha = 1.0f
-            }
-        }
-
-        ItemTouchHelper(simpleItemTouchCallback)
     }
 }

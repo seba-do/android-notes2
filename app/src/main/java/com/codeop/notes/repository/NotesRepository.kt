@@ -27,9 +27,15 @@ class NotesRepository private constructor(context: Context) {
         }
     }
 
-    fun getNotes(): List<Note> = persistenceRepository.getAllValues().map {
-        Note.fromString(it)
-    }.sortedBy { it.pos }
+    fun getActiveNotes(): List<Note> = persistenceRepository.getAllValues()
+        .map { Note.fromString(it) }
+        .filter { !it.archived }
+        .sortedBy { it.pos }
+
+    fun getArchivedNotes(): List<Note> = persistenceRepository.getAllValues()
+        .map { Note.fromString(it) }
+        .filter { it.archived }
+        .sortedBy { it.pos }
 
     fun removeNote(note: Note) {
         persistenceRepository.removeEntry(note.uid)
