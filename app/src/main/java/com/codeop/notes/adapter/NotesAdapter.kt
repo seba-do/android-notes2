@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.codeop.notes.R
 import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.VhNoteBinding
 
@@ -52,6 +53,9 @@ class NotesAdapter(
                 root.setCardBackgroundColor(bgColor)
                 noteTitle.text = note.title
                 noteDescription.text = note.text
+
+                archivedLabel.isVisible = note.archived
+                btnArchive.setImageResource(if(note.archived) R.drawable.ic_unarchive else R.drawable.ic_archive)
 
                 itemView.setOnClickListener {
                     btnGroup.isVisible = !btnGroup.isVisible

@@ -7,6 +7,7 @@ class AppConfigRepository private constructor(context: Context) {
     companion object {
         private const val APP_CONFIG_DB = "app-config-db"
         private const val LAYOUT_TYPE_KEY = "layout-type"
+        private const val ARCHIVED_VISIBLE_KEY = "archived-visible"
 
         private var instance: AppConfigRepository? = null
 
@@ -26,4 +27,10 @@ class AppConfigRepository private constructor(context: Context) {
     fun getSelectedLayoutType(): LayoutType {
         return LayoutType.values()[persistenceRepository.readInt(LAYOUT_TYPE_KEY)]
     }
+
+    var isArchivedVisible: Boolean
+        get() = persistenceRepository.readBoolean(ARCHIVED_VISIBLE_KEY)
+        set(value) {
+            persistenceRepository.writeBoolean(ARCHIVED_VISIBLE_KEY, value)
+        }
 }

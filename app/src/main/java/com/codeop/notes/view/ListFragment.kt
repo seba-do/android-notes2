@@ -19,10 +19,7 @@ import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.ListItemTouchHelper
 
-class ListFragment(
-//    private val onAddClick: () -> Unit,
-//    private val onItemClick: (Note) -> Unit,
-) : Fragment(R.layout.fragment_list) {
+class ListFragment : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
     private lateinit var menu: Menu
 
@@ -50,13 +47,17 @@ class ListFragment(
                 onDeleteClick = {
                     notesRepository.removeNote(it)
 
-                    notesAdapter.submitList(notesRepository.getActiveNotes())
+                    setList()
                     setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onArchiveClick = {
-                    notesRepository.saveNote(it.copy(archived = true))
+                    if (it.archived) {
+                        notesRepository.unarchiveNote(it)
+                    } else {
+                        notesRepository.archiveNote(it)
+                    }
 
-                    notesAdapter.submitList(notesRepository.getActiveNotes())
+                    setList()
                     setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onEditClick = {
@@ -68,7 +69,7 @@ class ListFragment(
                 }
             )
 
-            notesAdapter.submitList(notesRepository.getActiveNotes())
+            setList()
             setAnimationVisibility(notesAdapter.currentList.isEmpty())
 
             ItemTouchHelper(
@@ -83,6 +84,13 @@ class ListFragment(
         binding.btnAdd.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
+    }
+
+    private fun setList() {
+        var list = notesRepository.getActiveNotes()
+        if (appConfigRepository.isArchivedVisible) list = list + notesRepository.getArchivedNotes()
+
+        notesAdapter.submitList(list)
     }
 
     private fun setAnimationVisibility(isListEmpty: Boolean) {
@@ -131,6 +139,10 @@ class ListFragment(
                     findItem(R.id.btn_to_list)?.isVisible = false
                     setLayoutManager(LayoutType.LINEAR)
                 }
+            }
+            R.id.btn_archive -> {
+                appConfigRepository.isArchivedVisible = !appConfigRepository.isArchivedVisible
+                setList()
             }
         }
         return super.onOptionsItemSelected(item)

@@ -4,4 +4,5 @@
     <string name="add_note_description_hint">Description</string>
     <string name="btn_save_note">Save</string>
     <string name="title_add_note">Add a Note</string>
+    <string name="label_archived">Archived:</string>
 </resources>

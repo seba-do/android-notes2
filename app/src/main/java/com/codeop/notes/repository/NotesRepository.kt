@@ -21,6 +21,14 @@ class NotesRepository private constructor(context: Context) {
         persistenceRepository.writeString(note.uid, note.toString())
     }
 
+    fun archiveNote(note: Note) {
+        persistenceRepository.writeString(note.uid, note.copy(archived = true, pos = Int.MAX_VALUE).toString())
+    }
+
+    fun unarchiveNote(note: Note) {
+        persistenceRepository.writeString(note.uid, note.copy(archived = false, pos = -1).toString())
+    }
+
     fun updatePositions(list: List<Note>) {
         list.forEachIndexed { index, note ->
             saveNote(note.copy(pos = index))

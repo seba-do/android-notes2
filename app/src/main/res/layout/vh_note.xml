@@ -14,8 +14,23 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:id="@+id/archived_label"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="@string/label_archived"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="16sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@id/note_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/note_title" />
+
+        <TextView
             android:id="@+id/note_title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
@@ -24,7 +39,8 @@
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/archived_label"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Title of the note" />
 

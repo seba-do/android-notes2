@@ -26,4 +26,11 @@ class PersistenceRepository(context: Context, dbName: String) {
     }
 
     fun readInt(key: String) = sharedPrefs.getInt(key, 0)
+
+    fun readBoolean(key: String) = sharedPrefs.getBoolean(key, false)
+
+    fun writeBoolean(key: String, value: Boolean) = with(sharedPrefs.edit()) {
+        putBoolean(key, value)
+        commit()
+    }
 }
