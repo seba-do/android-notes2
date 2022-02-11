@@ -6,6 +6,7 @@ import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.codeop.notes.R
 import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.FragmentAddBinding
@@ -21,7 +22,8 @@ class AddFragment : Fragment(R.layout.fragment_add) {
         super.onCreate(savedInstanceState)
         activity?.setTitle(R.string.title_add_note)
 
-        noteToEdit = arguments?.getParcelable("note")
+        val args: AddFragmentArgs by navArgs()
+        noteToEdit = args.note
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -61,11 +61,8 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                     setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onEditClick = {
-                    findNavController().navigate(
-                        R.id.action_listFragment_to_addFragment,
-                        Bundle().apply {
-                            putParcelable("note", it)
-                        })
+                    val action = ListFragmentDirections.actionListFragmentToAddFragment(it)
+                    findNavController().navigate(action)
                 }
             )
 

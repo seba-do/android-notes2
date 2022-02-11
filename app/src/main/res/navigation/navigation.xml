@@ -12,7 +12,8 @@
         tools:layout="@layout/fragment_list">
         <action
             android:id="@+id/action_listFragment_to_addFragment"
-            app:destination="@id/addFragment">
+            app:destination="@id/addFragment" >
+
         </action>
     </fragment>
 
@@ -20,6 +21,12 @@
         android:id="@+id/addFragment"
         android:name="com.codeop.notes.view.AddFragment"
         android:label=""
-        tools:layout="@layout/fragment_add" />
+        tools:layout="@layout/fragment_add">
+        <argument
+            android:name="note"
+            app:argType="com.codeop.notes.data.Note"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
 
 </navigation>
