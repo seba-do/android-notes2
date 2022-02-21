@@ -3,45 +3,26 @@ package com.codeop.notes.data
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.codeop.notes.R
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
+@Entity
 @Parcelize
 data class Note(
-    val uid: String,
-    val title: String,
-    val text: String,
-    val color: Color,
-    val pos: Int = -1,
-    val archived: Boolean = false
+    @PrimaryKey val uid: String,
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "text") val text: String,
+    @ColumnInfo(name = "color") val color: Color,
+    @ColumnInfo(name = "pos") val pos: Int = -1,
+    @ColumnInfo(name = "isArchived") val archived: Boolean = false
 ): Parcelable {
     companion object {
-        private const val DELIMITER = "|"
-
         fun createNote(title: String, description: String, color: Color) =
             Note(UUID.randomUUID().toString(), title, description, color)
-
-        fun fromString(value: String): Note {
-            val split = value.split(DELIMITER)
-            return Note(
-                uid = split[0],
-                title = split[1],
-                text = split[2],
-                color = Color.values()[split[3].toInt()],
-                pos = split[4].toInt(),
-                archived = split[5].toBoolean()
-            )
-        }
-    }
-
-    override fun toString(): String {
-        return "$uid$DELIMITER" +
-                "$title$DELIMITER" +
-                "$text$DELIMITER" +
-                "${Color.values().indexOf(color)}$DELIMITER" +
-                "$pos$DELIMITER" +
-                "$archived"
     }
 
     enum class Color(val colorLight: Int, val colorDark: Int) {

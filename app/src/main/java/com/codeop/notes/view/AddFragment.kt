@@ -12,11 +12,17 @@ import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.FragmentAddBinding
 import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.DrawableHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AddFragment : Fragment(R.layout.fragment_add) {
     private lateinit var binding: FragmentAddBinding
     private var selectedColor: Note.Color = Note.Color.WHITE
     private var noteToEdit: Note? = null
+
+    private val notesRepository: NotesRepository
+        get() = NotesRepository.getInstance(requireContext())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,14 +62,23 @@ class AddFragment : Fragment(R.layout.fragment_add) {
                 val description = binding.descriptionInput.text.toString()
 
                 if (title.isNotBlank() && description.isNotBlank()) {
-                    NotesRepository.getInstance(requireContext())
-                        .saveNote(
-                            noteToEdit?.copy(
-                                title = title,
-                                text = description,
-                                color = selectedColor
-                            ) ?: Note.createNote(title, description, selectedColor)
-                        )
+                    CoroutineScope(Dispatchers.IO).launch {
+                        noteToEdit?.copy(
+                            title = title,
+                            text = description,
+                            color = selectedColor
+                        )?.let {
+                            notesRepository.updateNote(it)
+                        } ?: run {
+                            notesRepository.saveNote(
+                                Note.createNote(
+                                    title,
+                                    description,
+                                    selectedColor
+                                )
+                            )
+                        }
+                    }
                 }
 
                 findNavController().navigateUp()

@@ -1,4 +1,4 @@
-package com.codeop.notes.view
+package com.codeop.notes.list.view
 
 import android.os.Bundle
 import android.view.Menu
@@ -18,6 +18,10 @@ import com.codeop.notes.databinding.FragmentListBinding
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.ListItemTouchHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ListFragment : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
@@ -45,16 +49,20 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
             adapter = NotesAdapter(
                 onDeleteClick = {
-                    notesRepository.removeNote(it)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        notesRepository.removeNote(it)
+                    }
 
                     setList()
                     setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onArchiveClick = {
-                    if (it.archived) {
-                        notesRepository.unarchiveNote(it)
-                    } else {
-                        notesRepository.archiveNote(it)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (it.archived) {
+                            notesRepository.unarchiveNote(it)
+                        } else {
+                            notesRepository.archiveNote(it)
+                        }
                     }
 
                     setList()
@@ -66,28 +74,36 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                 }
             )
 
-            setList()
-            setAnimationVisibility(notesAdapter.currentList.isEmpty())
-
             ItemTouchHelper(
                 ListItemTouchHelper(
                     notesRepository,
-                    notesAdapter,
-                    this
-                )
+                    notesAdapter
+                ) { list ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        notesRepository.updatePositions(list)
+                    }
+                }
             ).attachToRecyclerView(this)
         }
 
         binding.btnAdd.setOnClickListener {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
+
+        setList()
     }
 
     private fun setList() {
-        var list = notesRepository.getActiveNotes()
-        if (appConfigRepository.isArchivedVisible) list = list + notesRepository.getArchivedNotes()
+        CoroutineScope(Dispatchers.IO).launch {
+            var list = notesRepository.getActiveNotes()
+            if (appConfigRepository.isArchivedVisible) list =
+                list + notesRepository.getArchivedNotes()
 
-        notesAdapter.submitList(list)
+            withContext(Dispatchers.Main) {
+                notesAdapter.submitList(list)
+                setAnimationVisibility(list.isEmpty())
+            }
+        }
     }
 
     private fun setAnimationVisibility(isListEmpty: Boolean) {

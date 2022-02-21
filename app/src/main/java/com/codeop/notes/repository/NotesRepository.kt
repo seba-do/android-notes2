@@ -2,10 +2,10 @@ package com.codeop.notes.repository
 
 import android.content.Context
 import com.codeop.notes.data.Note
+import com.codeop.notes.db.DB
 
 class NotesRepository private constructor(context: Context) {
     companion object {
-        private const val NOTES_DB = "notes-db"
         private var instance: NotesRepository? = null
 
         fun getInstance(context: Context): NotesRepository {
@@ -15,37 +15,41 @@ class NotesRepository private constructor(context: Context) {
         }
     }
 
-    private val persistenceRepository = PersistenceRepository(context, NOTES_DB)
+    private val db = DB.getInstance(context)
 
     fun saveNote(note: Note) {
-        persistenceRepository.writeString(note.uid, note.toString())
+        db.noteDao().insert(note)
+    }
+
+    fun updateNote(note: Note) {
+        db.noteDao().update(note)
     }
 
     fun archiveNote(note: Note) {
-        persistenceRepository.writeString(note.uid, note.copy(archived = true, pos = Int.MAX_VALUE).toString())
+        db.noteDao().update(note.copy(archived = true, pos = Int.MAX_VALUE))
     }
 
     fun unarchiveNote(note: Note) {
-        persistenceRepository.writeString(note.uid, note.copy(archived = false, pos = -1).toString())
+        db.noteDao().update(note.copy(archived = false, pos = -1))
     }
 
     fun updatePositions(list: List<Note>) {
         list.forEachIndexed { index, note ->
-            saveNote(note.copy(pos = index))
+            db.noteDao().update(note.copy(pos = index))
         }
     }
 
-    fun getActiveNotes(): List<Note> = persistenceRepository.getAllValues()
-        .map { Note.fromString(it) }
+    fun getNotes(): List<Note> = db.noteDao().getAll()
+
+    fun getActiveNotes(): List<Note> = db.noteDao().getAll()
         .filter { !it.archived }
         .sortedBy { it.pos }
 
-    fun getArchivedNotes(): List<Note> = persistenceRepository.getAllValues()
-        .map { Note.fromString(it) }
+    fun getArchivedNotes(): List<Note> = db.noteDao().getAll()
         .filter { it.archived }
         .sortedBy { it.pos }
 
     fun removeNote(note: Note) {
-        persistenceRepository.removeEntry(note.uid)
+        db.noteDao().delete(note)
     }
 }
