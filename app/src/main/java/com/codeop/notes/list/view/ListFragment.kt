@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +16,7 @@ import com.codeop.notes.R
 import com.codeop.notes.adapter.NotesAdapter
 import com.codeop.notes.data.LayoutType
 import com.codeop.notes.databinding.FragmentListBinding
+import com.codeop.notes.list.viewmodel.ListViewModel
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.ListItemTouchHelper
@@ -26,6 +28,7 @@ import kotlinx.coroutines.withContext
 class ListFragment : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
     private lateinit var menu: Menu
+    private lateinit var viewModel: ListViewModel
 
     private val notesAdapter: NotesAdapter
         get() = binding.notesList.adapter as NotesAdapter
@@ -42,6 +45,8 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         activity?.setTitle(R.string.app_name)
         setHasOptionsMenu(true)
 
+        viewModel = ViewModelProvider(this)[ListViewModel::class.java]
+
         binding = FragmentListBinding.bind(view)
 
         binding.notesList.apply {
@@ -49,24 +54,16 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
             adapter = NotesAdapter(
                 onDeleteClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        notesRepository.removeNote(it)
-                    }
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        notesRepository.removeNote(it)
+//                    }
+                    viewModel.removeNote(it)
 
-                    setList()
-                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
+//                    setList()
+//                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onArchiveClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (it.archived) {
-                            notesRepository.unarchiveNote(it)
-                        } else {
-                            notesRepository.archiveNote(it)
-                        }
-                    }
-
-                    setList()
-                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
+                    viewModel.switchArchived(it)
                 },
                 onEditClick = {
                     val action = ListFragmentDirections.actionListFragmentToAddFragment(it)
@@ -79,9 +76,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                     notesRepository,
                     notesAdapter
                 ) { list ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        notesRepository.updatePositions(list)
-                    }
+                    viewModel.updatePositions(list)
                 }
             ).attachToRecyclerView(this)
         }
@@ -90,19 +85,9 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
 
-        setList()
-    }
-
-    private fun setList() {
-        CoroutineScope(Dispatchers.IO).launch {
-            var list = notesRepository.getActiveNotes()
-            if (appConfigRepository.isArchivedVisible) list =
-                list + notesRepository.getArchivedNotes()
-
-            withContext(Dispatchers.Main) {
-                notesAdapter.submitList(list)
-                setAnimationVisibility(list.isEmpty())
-            }
+        viewModel.notes.observe(viewLifecycleOwner) {
+            notesAdapter.submitList(it)
+            setAnimationVisibility(it.isEmpty())
         }
     }
 
@@ -154,8 +139,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                 }
             }
             R.id.btn_archive -> {
-                appConfigRepository.isArchivedVisible = !appConfigRepository.isArchivedVisible
-                setList()
+                viewModel.switchArchivedVisibility()
             }
         }
         return super.onOptionsItemSelected(item)
