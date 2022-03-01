@@ -13,17 +13,13 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.codeop.notes.R
-import com.codeop.notes.adapter.NotesAdapter
+import com.codeop.notes.list.adapter.NotesAdapter
 import com.codeop.notes.data.LayoutType
 import com.codeop.notes.databinding.FragmentListBinding
 import com.codeop.notes.list.viewmodel.ListViewModel
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.ListItemTouchHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ListFragment : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
@@ -32,9 +28,6 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
     private val notesAdapter: NotesAdapter
         get() = binding.notesList.adapter as NotesAdapter
-
-    private val notesRepository: NotesRepository
-        get() = NotesRepository.getInstance(requireContext())
 
     private val appConfigRepository: AppConfigRepository
         get() = AppConfigRepository.getInstance(requireContext())
@@ -54,13 +47,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
             adapter = NotesAdapter(
                 onDeleteClick = {
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        notesRepository.removeNote(it)
-//                    }
                     viewModel.removeNote(it)
-
-//                    setList()
-//                    setAnimationVisibility(notesAdapter.currentList.isEmpty())
                 },
                 onArchiveClick = {
                     viewModel.switchArchived(it)
@@ -73,7 +60,6 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
             ItemTouchHelper(
                 ListItemTouchHelper(
-                    notesRepository,
                     notesAdapter
                 ) { list ->
                     viewModel.updatePositions(list)

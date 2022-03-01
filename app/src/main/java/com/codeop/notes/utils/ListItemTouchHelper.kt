@@ -2,15 +2,10 @@ package com.codeop.notes.utils
 
 import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.RecyclerView
-import com.codeop.notes.adapter.NotesAdapter
 import com.codeop.notes.data.Note
-import com.codeop.notes.repository.NotesRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.codeop.notes.list.adapter.NotesAdapter
 
 class ListItemTouchHelper(
-    private val notesRepository: NotesRepository,
     private val notesAdapter: NotesAdapter,
     private val onItemsMoved: (List<Note>) -> Unit
 ) : SimpleCallback(UP or DOWN or START or END, 0) {

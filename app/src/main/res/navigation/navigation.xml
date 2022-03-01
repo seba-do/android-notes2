@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/addFragment"
-        android:name="com.codeop.notes.view.AddFragment"
+        android:name="com.codeop.notes.add.view.AddFragment"
         android:label=""
         tools:layout="@layout/fragment_add">
         <argument

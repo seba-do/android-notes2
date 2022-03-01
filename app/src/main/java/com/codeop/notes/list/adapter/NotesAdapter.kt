@@ -1,4 +1,4 @@
-package com.codeop.notes.adapter
+package com.codeop.notes.list.adapter
 
 import android.animation.ValueAnimator
 import android.view.LayoutInflater
