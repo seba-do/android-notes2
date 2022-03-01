@@ -1,13 +1,15 @@
-package com.codeop.notes.view
+package com.codeop.notes.add.view
 
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.codeop.notes.R
+import com.codeop.notes.add.viewmodel.AddViewModel
 import com.codeop.notes.data.Note
 import com.codeop.notes.databinding.FragmentAddBinding
 import com.codeop.notes.repository.NotesRepository
@@ -18,11 +20,10 @@ import kotlinx.coroutines.launch
 
 class AddFragment : Fragment(R.layout.fragment_add) {
     private lateinit var binding: FragmentAddBinding
+    private val addVM: AddViewModel by viewModels()
+
     private var selectedColor: Note.Color = Note.Color.WHITE
     private var noteToEdit: Note? = null
-
-    private val notesRepository: NotesRepository
-        get() = NotesRepository.getInstance(requireContext())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,23 +63,7 @@ class AddFragment : Fragment(R.layout.fragment_add) {
                 val description = binding.descriptionInput.text.toString()
 
                 if (title.isNotBlank() && description.isNotBlank()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        noteToEdit?.copy(
-                            title = title,
-                            text = description,
-                            color = selectedColor
-                        )?.let {
-                            notesRepository.updateNote(it)
-                        } ?: run {
-                            notesRepository.saveNote(
-                                Note.createNote(
-                                    title,
-                                    description,
-                                    selectedColor
-                                )
-                            )
-                        }
-                    }
+                    addVM.saveNote(noteToEdit, title, description, selectedColor)
                 }
 
                 findNavController().navigateUp()
