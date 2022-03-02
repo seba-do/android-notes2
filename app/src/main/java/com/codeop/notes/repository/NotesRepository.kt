@@ -1,21 +1,10 @@
 package com.codeop.notes.repository
 
-import android.content.Context
 import com.codeop.notes.data.Note
-import com.codeop.notes.db.DB
 import com.codeop.notes.db.NoteDao
 import kotlinx.coroutines.flow.Flow
 
-class NotesRepository private constructor(private val noteDao: NoteDao) {
-    companion object {
-        private var instance: NotesRepository? = null
-
-        fun getInstance(context: Context): NotesRepository {
-            return instance ?: run {
-                NotesRepository(DB.getInstance(context).noteDao()).also { instance = it }
-            }
-        }
-    }
+class NotesRepository(private val noteDao: NoteDao) {
 
     val allNotes: Flow<List<Note>> = noteDao.getAll()
 

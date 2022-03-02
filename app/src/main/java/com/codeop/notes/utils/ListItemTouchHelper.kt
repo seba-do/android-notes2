@@ -4,6 +4,9 @@ import androidx.recyclerview.widget.ItemTouchHelper.*
 import androidx.recyclerview.widget.RecyclerView
 import com.codeop.notes.data.Note
 import com.codeop.notes.list.adapter.NotesAdapter
+import com.codeop.notes.repository.NotesRepository
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class ListItemTouchHelper(
     private val notesAdapter: NotesAdapter,

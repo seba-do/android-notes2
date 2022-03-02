@@ -10,11 +10,3 @@ import com.codeop.notes.data.Note
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
 }
-
-object DB {
-    private var instance: AppDatabase? = null
-
-    fun getInstance(context: Context) =
-        instance ?: Room.databaseBuilder(context, AppDatabase::class.java, "notes-db").build()
-            .also { instance = it }
-}

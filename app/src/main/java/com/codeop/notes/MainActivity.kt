@@ -3,6 +3,9 @@ package com.codeop.notes
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.codeop.notes.databinding.ActivityMainBinding
+import com.codeop.notes.di.KoinGraph
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 class MainActivity : AppCompatActivity() {
 
@@ -12,5 +15,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        startKoin {
+            androidContext(applicationContext)
+            modules(KoinGraph.mainModules)
+        }
     }
 }

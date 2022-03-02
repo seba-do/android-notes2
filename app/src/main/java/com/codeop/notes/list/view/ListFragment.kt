@@ -1,6 +1,7 @@
 package com.codeop.notes.list.view
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -18,27 +19,26 @@ import com.codeop.notes.data.LayoutType
 import com.codeop.notes.databinding.FragmentListBinding
 import com.codeop.notes.list.viewmodel.ListViewModel
 import com.codeop.notes.repository.AppConfigRepository
-import com.codeop.notes.repository.NotesRepository
 import com.codeop.notes.utils.ListItemTouchHelper
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class ListFragment : Fragment(R.layout.fragment_list) {
+class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
     private lateinit var binding: FragmentListBinding
     private lateinit var menu: Menu
-    private lateinit var viewModel: ListViewModel
+    private val potato: ListViewModel by viewModel()
 
     private val notesAdapter: NotesAdapter
         get() = binding.notesList.adapter as NotesAdapter
 
-    private val appConfigRepository: AppConfigRepository
-        get() = AppConfigRepository.getInstance(requireContext())
+    private val appConfigRepository: AppConfigRepository by inject()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         activity?.setTitle(R.string.app_name)
         setHasOptionsMenu(true)
-
-        viewModel = ViewModelProvider(this)[ListViewModel::class.java]
 
         binding = FragmentListBinding.bind(view)
 
@@ -47,10 +47,10 @@ class ListFragment : Fragment(R.layout.fragment_list) {
 
             adapter = NotesAdapter(
                 onDeleteClick = {
-                    viewModel.removeNote(it)
+                    potato.removeNote(it)
                 },
                 onArchiveClick = {
-                    viewModel.switchArchived(it)
+                    potato.switchArchived(it)
                 },
                 onEditClick = {
                     val action = ListFragmentDirections.actionListFragmentToAddFragment(it)
@@ -62,7 +62,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                 ListItemTouchHelper(
                     notesAdapter
                 ) { list ->
-                    viewModel.updatePositions(list)
+                    potato.updatePositions(list)
                 }
             ).attachToRecyclerView(this)
         }
@@ -71,7 +71,8 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
 
-        viewModel.notes.observe(viewLifecycleOwner) {
+        potato.notesOutput.observe(viewLifecycleOwner) {
+            Log.e("Test", "Test")
             notesAdapter.submitList(it)
             setAnimationVisibility(it.isEmpty())
         }
@@ -125,7 +126,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
                 }
             }
             R.id.btn_archive -> {
-                viewModel.switchArchivedVisibility()
+                potato.switchArchivedVisibility()
             }
         }
         return super.onOptionsItemSelected(item)

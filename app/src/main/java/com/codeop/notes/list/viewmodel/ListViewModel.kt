@@ -1,30 +1,40 @@
 package com.codeop.notes.list.viewmodel
 
-import android.app.Application
 import androidx.lifecycle.*
 import com.codeop.notes.data.Note
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.repository.NotesRepository
 import kotlinx.coroutines.launch
 
-class ListViewModel(application: Application) : AndroidViewModel(application) {
+class ListViewModel(
+    private val notesRepository: NotesRepository,
+    private val appConfigRepository: AppConfigRepository
+) : ViewModel() {
 
-    private val notesRepository: NotesRepository = NotesRepository.getInstance(application)
-    private val appConfigRepository: AppConfigRepository =
-        AppConfigRepository.getInstance(application)
-
-    private val isArchiveVisible: MutableLiveData<Boolean> = MutableLiveData(appConfigRepository.isArchivedVisible)
+    private val isArchiveVisible: MutableLiveData<Boolean> =
+        MutableLiveData(appConfigRepository.isArchivedVisible)
 
     private val _notes: LiveData<List<Note>> = notesRepository.allNotes.asLiveData()
-    val notes: LiveData<List<Note>> = Transformations.map(_notes) {
-        if (isArchiveVisible.value == true) {
-            it
-        } else {
-            it.filter { !it.archived }
+
+    val notesOutput = MediatorLiveData<List<Note>>()
+
+    init {
+        notesOutput.addSource(isArchiveVisible) {
+            setOutputNotes()
+        }
+
+        notesOutput.addSource(_notes) {
+            setOutputNotes()
         }
     }
 
-    private var areArchivedVisible: Boolean = appConfigRepository.isArchivedVisible
+    private fun setOutputNotes() {
+        notesOutput.value = if (isArchiveVisible.value == true) {
+            _notes.value ?: emptyList()
+        } else {
+            _notes.value?.filter { !it.archived } ?: emptyList()
+        }
+    }
 
     fun removeNote(note: Note) = viewModelScope.launch {
         notesRepository.removeNote(note)
@@ -40,7 +50,6 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
 
     fun switchArchivedVisibility() {
         appConfigRepository.isArchivedVisible = !appConfigRepository.isArchivedVisible
-        areArchivedVisible = appConfigRepository.isArchivedVisible
 
         isArchiveVisible.value = appConfigRepository.isArchivedVisible
     }

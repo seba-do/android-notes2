@@ -17,10 +17,11 @@ import com.codeop.notes.utils.DrawableHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AddFragment : Fragment(R.layout.fragment_add) {
     private lateinit var binding: FragmentAddBinding
-    private val addVM: AddViewModel by viewModels()
+    private val addVM: AddViewModel by viewModel()
 
     private var selectedColor: Note.Color = Note.Color.WHITE
     private var noteToEdit: Note? = null
