@@ -14,8 +14,8 @@ class ListViewModel(application: Application) : AndroidViewModel(application) {
         AppConfigRepository.getInstance(application)
 
     private val isArchiveVisible: MutableLiveData<Boolean> = MutableLiveData(appConfigRepository.isArchivedVisible)
-    private val _notes: LiveData<List<Note>> = notesRepository.allNotes.asLiveData()
 
+    private val _notes: LiveData<List<Note>> = notesRepository.allNotes.asLiveData()
     val notes: LiveData<List<Note>> = Transformations.map(_notes) {
         if (isArchiveVisible.value == true) {
             it
