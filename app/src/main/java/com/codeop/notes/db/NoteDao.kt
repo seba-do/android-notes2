@@ -10,11 +10,11 @@ interface NoteDao {
     fun getAll(): Flow<List<Note>>
 
     @Update(entity = Note::class)
-    fun update(note: Note)
+    suspend fun update(note: Note)
 
     @Insert
-    fun insert(note: Note)
+    suspend fun insert(note: Note)
 
     @Delete
-    fun delete(note: Note)
+    suspend fun delete(note: Note)
 }

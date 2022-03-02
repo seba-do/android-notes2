@@ -41,15 +41,7 @@ class NotesRepository private constructor(private val noteDao: NoteDao) {
         }
     }
 
-//    fun getActiveNotes(): List<Note> = db.noteDao().getAll()
-//        .filter { !it.archived }
-//        .sortedBy { it.pos }
-//
-//    fun getArchivedNotes(): List<Note> = db.noteDao().getAll()
-//        .filter { it.archived }
-//        .sortedBy { it.pos }
-
-    fun removeNote(note: Note) {
+    suspend fun removeNote(note: Note) {
         noteDao.delete(note)
     }
 }
