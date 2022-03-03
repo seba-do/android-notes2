@@ -8,15 +8,14 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.codeop.notes.R
-import com.codeop.notes.list.adapter.NotesAdapter
 import com.codeop.notes.data.LayoutType
 import com.codeop.notes.databinding.FragmentListBinding
+import com.codeop.notes.list.adapter.NotesAdapter
 import com.codeop.notes.list.viewmodel.ListViewModel
 import com.codeop.notes.repository.AppConfigRepository
 import com.codeop.notes.utils.ListItemTouchHelper
@@ -27,7 +26,7 @@ import org.koin.core.component.inject
 class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
     private lateinit var binding: FragmentListBinding
     private lateinit var menu: Menu
-    private val potato: ListViewModel by viewModel()
+    private val listVM: ListViewModel by viewModel()
 
     private val notesAdapter: NotesAdapter
         get() = binding.notesList.adapter as NotesAdapter
@@ -47,10 +46,10 @@ class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
 
             adapter = NotesAdapter(
                 onDeleteClick = {
-                    potato.removeNote(it)
+                    listVM.removeNote(it)
                 },
                 onArchiveClick = {
-                    potato.switchArchived(it)
+                    listVM.switchArchived(it)
                 },
                 onEditClick = {
                     val action = ListFragmentDirections.actionListFragmentToAddFragment(it)
@@ -62,7 +61,7 @@ class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
                 ListItemTouchHelper(
                     notesAdapter
                 ) { list ->
-                    potato.updatePositions(list)
+                    listVM.updatePositions(list)
                 }
             ).attachToRecyclerView(this)
         }
@@ -71,7 +70,7 @@ class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
             findNavController().navigate(R.id.action_listFragment_to_addFragment)
         }
 
-        potato.notesOutput.observe(viewLifecycleOwner) {
+        listVM.notesOutput.observe(viewLifecycleOwner) {
             Log.e("Test", "Test")
             notesAdapter.submitList(it)
             setAnimationVisibility(it.isEmpty())
@@ -126,7 +125,7 @@ class ListFragment : Fragment(R.layout.fragment_list), KoinComponent {
                 }
             }
             R.id.btn_archive -> {
-                potato.switchArchivedVisibility()
+                listVM.switchArchivedVisibility()
             }
         }
         return super.onOptionsItemSelected(item)

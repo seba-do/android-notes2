@@ -16,6 +16,7 @@ object KoinGraph {
         single { get<AppDatabase>().noteDao() }
         single { NotesRepository(get()) }
         single { AppConfigRepository() }
+
         factory { parameters -> PersistenceRepository(get(), parameters.get()) }
 
 
